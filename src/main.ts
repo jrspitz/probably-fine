@@ -13,7 +13,25 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <div class="color-temp">Colors here</div>
 `;
 
-const scene = {
+interface Scene {
+  gravity: number;
+  dt: number;
+  numIters: number;
+  frameNr: number;
+  obstacleX: number;
+  obstacleY: number;
+  obstacleRadius: number;
+  burningObstacle: boolean;
+  burningFloor: boolean;
+  paused: boolean;
+  showObstacle: boolean;
+  showSwirls: boolean;
+  swirlProbability: number;
+  swirlMaxRadius: number;
+  fluid: Fluid | null;
+}
+
+const scene: Scene = {
   gravity: 0.0,
   dt: 1.0 / 60.0,
   numIters: 10,
@@ -32,7 +50,7 @@ const scene = {
 };
 
 const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
-const c = canvas.getContext("2d");
+const c = canvas.getContext("2d")!;
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight - 100;
 
@@ -44,7 +62,8 @@ const U_FIELD = 0;
 const V_FIELD = 1;
 const T_FIELD = 2;
 
-let cnt = 0;
+// pretty sure this is a debug var
+// let cnt = 0;
 
 function cX(x: number) {
   return x * cScale;
@@ -103,7 +122,7 @@ class Fluid {
     this.swirlTime.fill(0.0);
   }
 
-  integrate(dt, gravity) {
+  integrate(dt: number, gravity: number) {
     const n = this.numY;
     for (let i = 1; i < this.numX; i++) {
       for (let j = 1; j < this.numY - 1; j++) {
@@ -113,7 +132,7 @@ class Fluid {
     }
   }
 
-  solveIncompressibility(numIters, dt) {
+  solveIncompressibility(numIters: number, _dt: number) {
     const n = this.numY;
     const overRelaxation = 1.9;
 
@@ -122,13 +141,12 @@ class Fluid {
         for (let j = 1; j < this.numY - 1; j++) {
           if (this.s[i * n + j] == 0.0) continue;
 
-          let s = this.s[i * n + j];
           const sx0 = this.s[(i - 1) * n + j];
           const sx1 = this.s[(i + 1) * n + j];
           const sy0 = this.s[i * n + j - 1];
           const sy1 = this.s[i * n + j + 1];
-          let s = sx0 + sx1 + sy0 + sy1;
-          if (s == 0.0) continue;
+          const neighborSum = sx0 + sx1 + sy0 + sy1;
+          if (neighborSum == 0.0) continue;
 
           const div =
             this.u[(i + 1) * n + j] -
@@ -136,7 +154,7 @@ class Fluid {
             this.v[i * n + j + 1] -
             this.v[i * n + j];
 
-          let p = -div / s;
+          let p = -div / neighborSum;
           p *= overRelaxation;
           this.u[i * n + j] -= sx0 * p;
           this.u[(i + 1) * n + j] += sx1 * p;
@@ -159,7 +177,7 @@ class Fluid {
     }
   }
 
-  sampleField(x, y, field) {
+  sampleField(x: number, y: number, field: number) {
     const n = this.numY;
     const h = this.h;
     const h1 = 1.0 / h;
@@ -171,8 +189,9 @@ class Fluid {
     let dx = 0.0;
     let dy = 0.0;
 
-    let f;
+    let f: Float32Array;
 
+    // TODO: make field a union type and remove this switch
     switch (field) {
       case U_FIELD:
         f = this.u;
@@ -187,6 +206,8 @@ class Fluid {
         dx = h2;
         dy = h2;
         break;
+      default:
+        f = this.t;
     }
 
     const x0 = Math.min(Math.floor((x - dx) * h1), this.numX - 1);
@@ -209,7 +230,7 @@ class Fluid {
     return val;
   }
 
-  avgU(i, j) {
+  avgU(i: number, j: number) {
     const n = this.numY;
     const u =
       (this.u[i * n + j - 1] +
@@ -220,7 +241,7 @@ class Fluid {
     return u;
   }
 
-  avgV(i, j) {
+  avgV(i: number, j: number) {
     const n = this.numY;
     const v =
       (this.v[(i - 1) * n + j] +
@@ -231,7 +252,7 @@ class Fluid {
     return v;
   }
 
-  advectVel(dt) {
+  advectVel(dt: number) {
     this.newU.set(this.u);
     this.newV.set(this.v);
 
@@ -241,7 +262,7 @@ class Fluid {
 
     for (let i = 1; i < this.numX; i++) {
       for (let j = 1; j < this.numY; j++) {
-        cnt++;
+        // cnt++;
 
         // u component
         if (
@@ -280,7 +301,7 @@ class Fluid {
     this.v.set(this.newV);
   }
 
-  advectTemperature(dt) {
+  advectTemperature(dt: number) {
     this.newT.set(this.t);
 
     const n = this.numY;
@@ -302,7 +323,7 @@ class Fluid {
     this.t.set(this.newT);
   }
 
-  updateFire(dt) {
+  updateFire(dt: number) {
     const h = this.h;
 
     const swirlTimeSpan = 1.0;
@@ -340,7 +361,6 @@ class Fluid {
     // advect and modify velocity field
 
     for (let nr = 0; nr < this.numSwirls; nr++) {
-      const ageScale = this.swirlTime[nr] / swirlTimeSpan;
       let x = this.swirlX[nr];
       let y = this.swirlY[nr];
       const swirlU = (1.0 - swirlDamping) * this.sampleField(x, y, U_FIELD);
@@ -381,7 +401,6 @@ class Fluid {
               let s = 1.0;
               if (r > 0.8 * kernelRadius) {
                 s = 5.0 - (5.0 / kernelRadius) * r;
-                // s = (kernelRadius - r) / kernelRadius * ageScale;
               }
 
               if (dim == 0) {
@@ -410,7 +429,6 @@ class Fluid {
 
         const cooling = t < 0.3 ? smokeCooling : fireCooling;
         this.t[i * n + j] = Math.max(t - cooling, 0.0);
-        const u = this.u[i * n + j];
         const v = this.v[i * n + j];
         const targetV = t * lift;
         this.v[i * n + j] += (targetV - v) * acceleration;
@@ -470,7 +488,7 @@ class Fluid {
 
   // ----------------- end of simulator ------------------------------
 
-  simulate(dt, gravity, numIters) {
+  simulate(dt: number, gravity: number, numIters: number) {
     this.integrate(dt, gravity);
 
     this.solveIncompressibility(numIters, dt);
@@ -482,8 +500,7 @@ class Fluid {
 }
 
 function setupScene() {
-  debugger;
-  const canvas = document.getElementById("myCanvas");
+  const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight - 20;
 
@@ -511,18 +528,7 @@ function setupScene() {
 
 // draw -------------------------------------------------------
 
-function setColor(r, g, b) {
-  c.fillStyle = `rgb(
-			${Math.floor(255 * r)},
-			${Math.floor(255 * g)},
-			${Math.floor(255 * b)})`;
-  c.strokeStyle = `rgb(
-			${Math.floor(255 * r)},
-			${Math.floor(255 * g)},
-			${Math.floor(255 * b)})`;
-}
-
-function getFireColor(val) {
+function getFireColor(val: number) {
   val = Math.min(Math.max(val, 0.0), 1.0);
   let r, g, b;
 
@@ -549,7 +555,7 @@ function draw() {
   c.clearRect(0, 0, canvas.width, canvas.height);
 
   c.fillStyle = "#FF0000";
-  const f = scene.fluid;
+  const f = scene.fluid!;
   const n = f.numY;
 
   const cellScale = 1.1;
@@ -558,12 +564,10 @@ function draw() {
 
   const id = c.getImageData(0, 0, canvas.width, canvas.height);
 
-  let color = [255, 255, 255, 255];
-
   for (let i = 0; i < f.numX; i++) {
     for (let j = 0; j < f.numY; j++) {
       const t = f.t[i * n + j];
-      color = getFireColor(t, 0.0, 1.0);
+      const color = getFireColor(t);
 
       const x = Math.floor(cX(i * h));
       const y = Math.floor(cY((j + 1) * h));
@@ -634,7 +638,7 @@ function draw() {
   }
 }
 
-function setObstacle(x, y, reset) {
+function setObstacle(x: number, y: number, reset: boolean) {
   let vx = 0.0;
   let vy = 0.0;
 
@@ -648,9 +652,8 @@ function setObstacle(x, y, reset) {
   scene.showObstacle = true;
 
   const r = scene.obstacleRadius;
-  const f = scene.fluid;
+  const f = scene.fluid!;
   const n = f.numY;
-  const cd = Math.sqrt(2) * f.h;
 
   for (let i = 1; i < f.numX - 2; i++) {
     for (let j = 1; j < f.numY - 2; j++) {
@@ -675,7 +678,7 @@ function setObstacle(x, y, reset) {
 
 let mouseDown = false;
 
-function startDrag(x, y) {
+function startDrag(x: number, y: number) {
   const bounds = canvas.getBoundingClientRect();
 
   const mx = x - bounds.left - canvas.clientLeft;
@@ -688,7 +691,7 @@ function startDrag(x, y) {
   setObstacle(x, y, true);
 }
 
-function drag(x, y) {
+function drag(x: number, y: number) {
   if (mouseDown) {
     const bounds = canvas.getBoundingClientRect();
     const mx = x - bounds.left - canvas.clientLeft;
@@ -719,7 +722,7 @@ canvas.addEventListener("touchstart", (event) => {
   startDrag(event.touches[0].clientX, event.touches[0].clientY);
 });
 
-canvas.addEventListener("touchend", (event) => {
+canvas.addEventListener("touchend", (_event) => {
   endDrag();
 });
 
@@ -746,15 +749,8 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-function toggleStart() {
-  const button = document.getElementById("startButton");
-  if (scene.paused) button.innerHTML = "Stop";
-  else button.innerHTML = "Start";
-  scene.paused = !scene.paused;
-}
-
-document.getElementById("probabilitySlider").oninput = function () {
-  scene.swirlProbability = this.value;
+document.getElementById("probabilitySlider")!.oninput = function () {
+  scene.swirlProbability = parseFloat((this as HTMLInputElement).value);
 };
 
 let resizeTimer = 0;
@@ -772,7 +768,7 @@ function addResizeHandler() {
 addResizeHandler();
 
 function simulate() {
-  if (!scene.paused)
+  if (!scene.paused && scene.fluid)
     scene.fluid.simulate(scene.dt, scene.gravity, scene.numIters);
   scene.frameNr++;
 }
