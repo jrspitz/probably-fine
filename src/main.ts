@@ -62,6 +62,8 @@ const U_FIELD = 0;
 const V_FIELD = 1;
 const T_FIELD = 2;
 
+type FieldType = typeof U_FIELD | typeof V_FIELD | typeof T_FIELD;
+
 // pretty sure this is a debug var
 // let cnt = 0;
 
@@ -132,7 +134,7 @@ class Fluid {
     }
   }
 
-  solveIncompressibility(numIters: number, _dt: number) {
+  solveIncompressibility(numIters: number) {
     const n = this.numY;
     const overRelaxation = 1.9;
 
@@ -177,7 +179,7 @@ class Fluid {
     }
   }
 
-  sampleField(x: number, y: number, field: number) {
+  sampleField(x: number, y: number, field: FieldType) {
     const n = this.numY;
     const h = this.h;
     const h1 = 1.0 / h;
@@ -186,29 +188,15 @@ class Fluid {
     x = Math.max(Math.min(x, this.numX * h), h);
     y = Math.max(Math.min(y, this.numY * h), h);
 
-    let dx = 0.0;
-    let dy = 0.0;
-
-    let f: Float32Array;
-
-    // TODO: make field a union type and remove this switch
-    switch (field) {
-      case U_FIELD:
-        f = this.u;
-        dy = h2;
-        break;
-      case V_FIELD:
-        f = this.v;
-        dx = h2;
-        break;
-      case T_FIELD:
-        f = this.t;
-        dx = h2;
-        dy = h2;
-        break;
-      default:
-        f = this.t;
-    }
+    const fieldData: Record<
+      FieldType,
+      { f: Float32Array; dx: number; dy: number }
+    > = {
+      [U_FIELD]: { f: this.u, dx: 0, dy: h2 },
+      [V_FIELD]: { f: this.v, dx: h2, dy: 0 },
+      [T_FIELD]: { f: this.t, dx: h2, dy: h2 },
+    };
+    const { f, dx, dy } = fieldData[field];
 
     const x0 = Math.min(Math.floor((x - dx) * h1), this.numX - 1);
     const tx = (x - dx - x0 * h) * h1;
@@ -491,7 +479,7 @@ class Fluid {
   simulate(dt: number, gravity: number, numIters: number) {
     this.integrate(dt, gravity);
 
-    this.solveIncompressibility(numIters, dt);
+    this.solveIncompressibility(numIters);
     this.extrapolate();
     this.advectVel(dt);
     this.advectTemperature(dt);
