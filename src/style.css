@@ -299,6 +299,10 @@ code {
   position: relative; /* anchor for the floating settings button */
 }
 
+#myCanvas {
+  display: block;
+}
+
 .settings {
   position: absolute;
   top: 12px;

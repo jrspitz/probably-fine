@@ -35,8 +35,12 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
 const c = canvas.getContext("2d")!;
 const MAX_CANVAS_WIDTH = 1600;
-canvas.width = Math.min(window.innerWidth, MAX_CANVAS_WIDTH);
-canvas.height = window.innerHeight - 100;
+const CANVAS_BORDER_TOTAL = 4; // 2px inline border on each side (see template)
+canvas.width = Math.max(
+  50,
+  Math.min(window.innerWidth, MAX_CANVAS_WIDTH) - CANVAS_BORDER_TOTAL,
+);
+canvas.height = Math.max(50, window.innerHeight - 100 - CANVAS_BORDER_TOTAL);
 
 canvas.focus();
 
@@ -55,15 +59,18 @@ function cY(y: number) {
 
 function setupScene() {
   const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
-  canvas.width = Math.min(window.innerWidth, MAX_CANVAS_WIDTH);
-  canvas.height = window.innerHeight - 20;
+  canvas.width = Math.max(
+    50,
+    Math.min(window.innerWidth, MAX_CANVAS_WIDTH) - CANVAS_BORDER_TOTAL,
+  );
+  canvas.height = Math.max(50, window.innerHeight - 20 - CANVAS_BORDER_TOTAL);
 
   const simHeight = 1.0;
   cScale = canvas.height / simHeight;
   const simWidth = canvas.width / cScale;
 
-  const numCells = 100000;
-  // const numCells = 50000;
+  // const numCells = 100000;
+  const numCells = 50000;
   const h = Math.sqrt((simWidth * simHeight) / numCells);
 
   const numX = Math.floor(simWidth / h);
