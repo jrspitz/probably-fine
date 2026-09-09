@@ -339,8 +339,8 @@ export class Fluid {
 
     // update temperatures
 
-    const minR = 0.85 * scene.obstacleRadius;
-    const maxR = scene.obstacleRadius + h;
+    const inner = 0.85 * scene.obstacleHalfSize;
+    const outer = scene.obstacleHalfSize + h;
 
     for (let i = 0; i < this.numX; i++) {
       for (let j = 0; j < this.numY; j++) {
@@ -358,8 +358,8 @@ export class Fluid {
         if (scene.burningObstacle) {
           const dx = (i + 0.5) * this.h - scene.obstacleX;
           const dy = (j + 0.5) * this.h - scene.obstacleY - 3.0 * this.h;
-          const d = dx * dx + dy * dy;
-          if (minR * minR <= d && d < maxR * maxR) {
+          const m = Math.max(Math.abs(dx), Math.abs(dy));
+          if (inner <= m && m < outer) {
             this.t[i * n + j] = 1.0;
             if (Math.random() < 0.5 * swirlProbability) numNewSwirls++;
           }

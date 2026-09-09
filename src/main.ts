@@ -20,7 +20,7 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
       </button>
       <div class="settings-menu" id="settingsMenu">
         <label class="setting"><input type = "checkbox" id = "burningFloor" checked> Floor</label>
-        <label class="setting"><input type = "checkbox" id = "burningObstacle"> Ring</label>
+        <label class="setting"><input type = "checkbox" id = "burningObstacle"> Square</label>
         <label class="setting"><input type = "checkbox" id = "swirlButton"> Swirls</label>
         <div class="setting"><label for = "probabilitySlider">Probability</label>
         <input type = "range" min = "0" max = "100" value = "50" id = "probabilitySlider" class = "slider"></div>
@@ -61,6 +61,7 @@ function setupScene() {
   const simWidth = canvas.width / cScale;
 
   const numCells = 100000;
+  // const numCells = 50000;
   const h = Math.sqrt((simWidth * simHeight) / numCells);
 
   const numX = Math.floor(simWidth / h);
@@ -146,18 +147,17 @@ function draw() {
   c.putImageData(id, 0, 0);
 
   if (scene.showObstacle) {
-    const r = scene.obstacleRadius + f.h;
+    const half = scene.obstacleHalfSize + f.h;
 
     c.fillStyle = "#DDDDDD";
     c.lineWidth = 20.0;
     c.strokeStyle = "#404040";
     c.beginPath();
-    c.arc(
-      cX(scene.obstacleX),
-      cY(scene.obstacleY),
-      cScale * r,
-      0.0,
-      2.0 * Math.PI,
+    c.strokeRect(
+      cX(scene.obstacleX - half),
+      cY(scene.obstacleY + half),
+      cScale * half * 2,
+      cScale * half * 2,
     );
     c.closePath();
     c.stroke();
@@ -194,7 +194,7 @@ function setObstacle(x: number, y: number, reset: boolean) {
   scene.obstacleY = y;
   scene.showObstacle = true;
 
-  const r = scene.obstacleRadius;
+  const r = scene.obstacleHalfSize;
   const f = scene.fluid!;
   const n = f.numY;
 
@@ -205,8 +205,7 @@ function setObstacle(x: number, y: number, reset: boolean) {
       const dx = (i + 0.5) * f.h - x;
       const dy = (j + 0.5) * f.h - y;
 
-      const d2 = dx * dx + dy * dy;
-      if (d2 < r * r) {
+      if (Math.abs(dx) < r && Math.abs(dy) < r) {
         // f.s[i*n + j] = 0.0;
         f.u[i * n + j] += 0.2 * vx;
         f.u[(i + 1) * n + j] += 0.2 * vx;

@@ -7,7 +7,7 @@ export interface Scene {
   frameNr: number;
   obstacleX: number;
   obstacleY: number;
-  obstacleRadius: number;
+  obstacleHalfSize: number;
   burningObstacle: boolean;
   burningFloor: boolean;
   paused: boolean;
@@ -25,7 +25,7 @@ export const scene: Scene = {
   frameNr: 0,
   obstacleX: 0.0,
   obstacleY: 0.0,
-  obstacleRadius: 0.2,
+  obstacleHalfSize: 0.1,
   burningObstacle: false, //true,
   burningFloor: true, // false,
   paused: false,
