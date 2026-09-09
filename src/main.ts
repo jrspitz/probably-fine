@@ -26,7 +26,6 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <div class="canvas-wrap">
     <canvas id="myCanvas" style="border:2px solid"></canvas>
   </div>
-  <div class="color-temp">Colors here</div>
 `;
 
 interface Scene {
@@ -601,15 +600,6 @@ function draw() {
   if (scene.showObstacle) {
     const r = scene.obstacleRadius + f.h;
 
-    // scene.showPressure doesn't exist
-    // if (scene.showPressure) c.fillStyle = "#000000";
-    // else c.fillStyle = "#DDDDDD";
-    // c.beginPath();
-    // c.arc(
-    // 	cX(scene.obstacleX), cY(scene.obstacleY), cScale * r, 0.0, 2.0 * Math.PI);
-    // c.closePath();
-    // c.fill();
-
     c.fillStyle = "#DDDDDD";
     c.lineWidth = 20.0;
     c.strokeStyle = "#404040";
@@ -758,17 +748,23 @@ function setupEventListeners() {
     }
   });
 
-  document.getElementById("burningFloor")!.addEventListener("change", (event) => {
-    scene.burningFloor = (event.target as HTMLInputElement).checked;
-  });
+  document
+    .getElementById("burningFloor")!
+    .addEventListener("change", (event) => {
+      scene.burningFloor = (event.target as HTMLInputElement).checked;
+    });
 
-  document.getElementById("burningObstacle")!.addEventListener("change", (event) => {
-    scene.burningObstacle = (event.target as HTMLInputElement).checked;
-  });
+  document
+    .getElementById("burningObstacle")!
+    .addEventListener("change", (event) => {
+      scene.burningObstacle = (event.target as HTMLInputElement).checked;
+    });
 
-  document.getElementById("swirlButton")!.addEventListener("change", (event) => {
-    scene.showSwirls = (event.target as HTMLInputElement).checked;
-  });
+  document
+    .getElementById("swirlButton")!
+    .addEventListener("change", (event) => {
+      scene.showSwirls = (event.target as HTMLInputElement).checked;
+    });
 
   document.getElementById("probabilitySlider")!.oninput = function () {
     scene.swirlProbability = parseFloat((this as HTMLInputElement).value);
