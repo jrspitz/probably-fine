@@ -20,8 +20,8 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
         </svg>
       </button>
       <div class="settings-menu" id="settingsMenu">
-        <label class="setting"><input type = "checkbox" id = "burningFloor" checked> Floor</label>
-        <label class="setting"><input type = "checkbox" id = "burningObstacle"> Cup</label>
+        <label class="setting"><input type = "checkbox" id = "burningFloor" checked>Hot Floor</label>
+        <label class="setting"><input type = "checkbox" id = "burningObstacle">Hot Cup</label>
         <label class="setting"><input type = "checkbox" id = "swirlButton"> Swirls</label>
         <label class="setting"><input type = "checkbox" id = "tempLegendToggle"> Legend</label>
         <div class="setting"><label for = "probabilitySlider">Probability</label>
