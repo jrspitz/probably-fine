@@ -1,5 +1,6 @@
 import "./style.css";
 import { Fluid } from "./fluid";
+import { cupHandle, isCupWall } from "./obstacle";
 import { scene } from "./scene";
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
@@ -20,8 +21,9 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
       </button>
       <div class="settings-menu" id="settingsMenu">
         <label class="setting"><input type = "checkbox" id = "burningFloor" checked> Floor</label>
-        <label class="setting"><input type = "checkbox" id = "burningObstacle"> Square</label>
+        <label class="setting"><input type = "checkbox" id = "burningObstacle"> Cup</label>
         <label class="setting"><input type = "checkbox" id = "swirlButton"> Swirls</label>
+        <label class="setting"><input type = "checkbox" id = "tempLegendToggle"> Legend</label>
         <div class="setting"><label for = "probabilitySlider">Probability</label>
         <input type = "range" min = "0" max = "100" value = "50" id = "probabilitySlider" class = "slider"></div>
       </div>
@@ -147,19 +149,40 @@ function draw() {
   c.putImageData(id, 0, 0);
 
   if (scene.showObstacle) {
-    const half = scene.obstacleHalfSize + f.h;
+    const dims = {
+      w: scene.obstacleCupW,
+      h: scene.obstacleCupH,
+      wall: scene.obstacleWall,
+    };
+    const hw = dims.w / 2;
+    const hh = dims.h / 2;
+    const inset = dims.wall / 2;
+    const ox = scene.obstacleX;
+    const oy = scene.obstacleY;
 
-    c.fillStyle = "#DDDDDD";
-    c.lineWidth = 20.0;
     c.strokeStyle = "#404040";
+    c.lineWidth = Math.max(2, cScale * dims.wall);
+    c.lineJoin = "round";
+    // cup body: U-shape (open top), stroke centered on the wall boxes
     c.beginPath();
-    c.strokeRect(
-      cX(scene.obstacleX - half),
-      cY(scene.obstacleY + half),
-      cScale * half * 2,
-      cScale * half * 2,
+    c.moveTo(cX(ox - hw + inset), cY(oy + hh));
+    c.lineTo(cX(ox - hw + inset), cY(oy - hh + inset));
+    c.lineTo(cX(ox + hw - inset), cY(oy - hh + inset));
+    c.lineTo(cX(ox + hw - inset), cY(oy + hh));
+    c.stroke();
+
+    // handle: elliptical ring on the +x side
+    const hd = cupHandle(dims);
+    c.beginPath();
+    c.ellipse(
+      cX(ox + hd.cx),
+      cY(oy + hd.cy),
+      cScale * hd.rx,
+      cScale * hd.ry,
+      0,
+      0.0,
+      2.0 * Math.PI,
     );
-    c.closePath();
     c.stroke();
     c.lineWidth = 1.0;
   }
@@ -179,6 +202,39 @@ function draw() {
       c.lineWidth = 1.0;
     }
   }
+
+  if (scene.showTemperatureLegend) drawTemperatureLegend();
+}
+
+function drawTemperatureLegend() {
+  c.save();
+
+  const margin = 12;
+  const barW = Math.min(240, canvas.width - margin * 2);
+  const barH = 14;
+  const pad = 8;
+  const panelW = barW + pad * 2;
+  const panelH = barH + 22 + pad * 2;
+  const px = margin;
+  const py = canvas.height - margin - panelH;
+
+  c.fillStyle = "rgba(0,0,0,0.55)";
+  c.fillRect(px, py, panelW, panelH);
+
+  for (let x = 0; x < barW; x++) {
+    const color = getFireColor(x / (barW - 1));
+    c.fillStyle = `rgb(${color[0] | 0},${color[1] | 0},${color[2] | 0})`;
+    c.fillRect(px + pad + x, py + pad, 1, barH);
+  }
+
+  c.fillStyle = "#fff";
+  c.font = "11px monospace";
+  c.textBaseline = "top";
+  c.fillText("0", px + pad, py + pad + barH + 4);
+  c.fillText("0.5", px + pad + barW / 2 - 8, py + pad + barH + 4);
+  c.fillText("1", px + pad + barW - 6, py + pad + barH + 4);
+
+  c.restore();
 }
 
 function setObstacle(x: number, y: number, reset: boolean) {
@@ -194,7 +250,11 @@ function setObstacle(x: number, y: number, reset: boolean) {
   scene.obstacleY = y;
   scene.showObstacle = true;
 
-  const r = scene.obstacleHalfSize;
+  const dims = {
+    w: scene.obstacleCupW,
+    h: scene.obstacleCupH,
+    wall: scene.obstacleWall,
+  };
   const f = scene.fluid!;
   const n = f.numY;
 
@@ -205,7 +265,7 @@ function setObstacle(x: number, y: number, reset: boolean) {
       const dx = (i + 0.5) * f.h - x;
       const dy = (j + 0.5) * f.h - y;
 
-      if (Math.abs(dx) < r && Math.abs(dy) < r) {
+      if (isCupWall(dx, dy, dims, f.h)) {
         // f.s[i*n + j] = 0.0;
         f.u[i * n + j] += 0.2 * vx;
         f.u[(i + 1) * n + j] += 0.2 * vx;
@@ -311,6 +371,12 @@ function setupEventListeners() {
     .getElementById("swirlButton")!
     .addEventListener("change", (event) => {
       scene.showSwirls = (event.target as HTMLInputElement).checked;
+    });
+
+  document
+    .getElementById("tempLegendToggle")!
+    .addEventListener("change", (event) => {
+      scene.showTemperatureLegend = (event.target as HTMLInputElement).checked;
     });
 
   document.getElementById("probabilitySlider")!.oninput = function () {

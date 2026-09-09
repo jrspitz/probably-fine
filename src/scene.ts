@@ -7,12 +7,15 @@ export interface Scene {
   frameNr: number;
   obstacleX: number;
   obstacleY: number;
-  obstacleHalfSize: number;
+  obstacleCupW: number;
+  obstacleCupH: number;
+  obstacleWall: number;
   burningObstacle: boolean;
   burningFloor: boolean;
   paused: boolean;
   showObstacle: boolean;
   showSwirls: boolean;
+  showTemperatureLegend: boolean;
   swirlProbability: number;
   swirlMaxRadius: number;
   fluid: Fluid | null;
@@ -25,12 +28,15 @@ export const scene: Scene = {
   frameNr: 0,
   obstacleX: 0.0,
   obstacleY: 0.0,
-  obstacleHalfSize: 0.1,
+  obstacleCupW: 0.2,
+  obstacleCupH: 0.24,
+  obstacleWall: 0.025,
   burningObstacle: false, //true,
   burningFloor: true, // false,
   paused: false,
   showObstacle: false,
   showSwirls: false,
+  showTemperatureLegend: false,
   swirlProbability: 50.0,
   swirlMaxRadius: 0.05,
   fluid: null,

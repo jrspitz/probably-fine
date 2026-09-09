@@ -1,3 +1,4 @@
+import { isCupWall } from "./obstacle";
 import { scene } from "./scene";
 
 export const U_FIELD = 0;
@@ -339,8 +340,11 @@ export class Fluid {
 
     // update temperatures
 
-    const inner = 0.85 * scene.obstacleHalfSize;
-    const outer = scene.obstacleHalfSize + h;
+    const cupDims = {
+      w: scene.obstacleCupW,
+      h: scene.obstacleCupH,
+      wall: scene.obstacleWall,
+    };
 
     for (let i = 0; i < this.numX; i++) {
       for (let j = 0; j < this.numY; j++) {
@@ -357,9 +361,8 @@ export class Fluid {
         // obstacle burning
         if (scene.burningObstacle) {
           const dx = (i + 0.5) * this.h - scene.obstacleX;
-          const dy = (j + 0.5) * this.h - scene.obstacleY - 3.0 * this.h;
-          const m = Math.max(Math.abs(dx), Math.abs(dy));
-          if (inner <= m && m < outer) {
+          const dy = (j + 0.5) * this.h - scene.obstacleY;
+          if (isCupWall(dx, dy, cupDims, h)) {
             this.t[i * n + j] = 1.0;
             if (Math.random() < 0.5 * swirlProbability) numNewSwirls++;
           }
