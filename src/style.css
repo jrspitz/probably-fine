@@ -157,8 +157,8 @@ code {
 }
 
 #app {
-  width: 1126px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 1600px;
   margin: 0 auto;
   text-align: center;
   border-inline: 1px solid var(--border);
@@ -293,4 +293,58 @@ code {
     right: 0;
     border-right-color: var(--border);
   }
+}
+
+.simControls {
+  position: relative; /* anchor for the settings dropdown */
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 12px;
+}
+
+.settings-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--text-h);
+  cursor: pointer;
+}
+.settings-button:hover {
+  background: var(--accent-bg);
+}
+.settings-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+.settings-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 12px;
+  display: none; /* closed by default */
+  min-width: 220px;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  text-align: left;
+  z-index: 10;
+}
+.settings-menu.open {
+  display: flex;
+}
+
+.setting {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }

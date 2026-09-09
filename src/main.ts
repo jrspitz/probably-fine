@@ -2,10 +2,26 @@ import "./style.css";
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <div class="simControls">
-    <input type = "checkbox" id = "burningFloor" checked> Floor
-    <input type = "checkbox" id = "burningObstacle"> Ring
-    <input type = "checkbox" id = "swirlButton"> Swirls
-    <input type = "range" min = "0" max = "100" value = "50" id = "probabilitySlider" class = "slider"> Probability
+    <button
+      id="settingsButton"
+      type="button"
+      class="settings-button"
+      aria-label="Settings"
+      aria-expanded="false"
+      aria-controls="settingsMenu"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+    </button>
+    <div class="settings-menu" id="settingsMenu">
+      <label class="setting"><input type = "checkbox" id = "burningFloor" checked> Floor</label>
+      <label class="setting"><input type = "checkbox" id = "burningObstacle"> Ring</label>
+      <label class="setting"><input type = "checkbox" id = "swirlButton"> Swirls</label>
+      <div class="setting"><label for = "probabilitySlider">Probability</label>
+      <input type = "range" min = "0" max = "100" value = "50" id = "probabilitySlider" class = "slider"></div>
+    </div>
   </div>
   <div class="canvas-wrap">
     <canvas id="myCanvas" style="border:2px solid"></canvas>
@@ -51,7 +67,8 @@ const scene: Scene = {
 
 const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
 const c = canvas.getContext("2d")!;
-canvas.width = window.innerWidth;
+const MAX_CANVAS_WIDTH = 1600;
+canvas.width = Math.min(window.innerWidth, MAX_CANVAS_WIDTH);
 canvas.height = window.innerHeight - 100;
 
 canvas.focus();
@@ -489,7 +506,7 @@ class Fluid {
 
 function setupScene() {
   const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
-  canvas.width = window.innerWidth;
+  canvas.width = Math.min(window.innerWidth, MAX_CANVAS_WIDTH);
   canvas.height = window.innerHeight - 20;
 
   const simHeight = 1.0;
@@ -735,6 +752,9 @@ function setupEventListeners() {
         simulate();
         scene.paused = true;
         break;
+      case "Escape":
+        setSettingsOpen(false);
+        break;
     }
   });
 
@@ -753,6 +773,28 @@ function setupEventListeners() {
   document.getElementById("probabilitySlider")!.oninput = function () {
     scene.swirlProbability = parseFloat((this as HTMLInputElement).value);
   };
+
+  const settingsButton = document.getElementById("settingsButton")!;
+  const settingsMenu = document.getElementById("settingsMenu")!;
+
+  function setSettingsOpen(open: boolean) {
+    settingsMenu.classList.toggle("open", open);
+    settingsButton.setAttribute("aria-expanded", String(open));
+  }
+
+  settingsButton.addEventListener("click", () =>
+    setSettingsOpen(!settingsMenu.classList.contains("open")),
+  );
+
+  document.addEventListener("click", (event) => {
+    if (
+      settingsMenu.classList.contains("open") &&
+      !settingsMenu.contains(event.target as Node) &&
+      !settingsButton.contains(event.target as Node)
+    ) {
+      setSettingsOpen(false);
+    }
+  });
 
   let resizeTimer = 0;
 
