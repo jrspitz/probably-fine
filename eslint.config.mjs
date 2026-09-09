@@ -17,4 +17,13 @@ export default defineConfig({
       ...globals.browser, // Adds window, document, etc.
     },
   },
+  rules: {
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_",
+      },
+    ],
+  },
 });
