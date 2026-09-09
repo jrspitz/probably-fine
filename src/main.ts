@@ -2,9 +2,9 @@ import "./style.css";
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <div class="simControls">
-    <input type = "checkbox" id = "burningFloor" onclick = "scene.burningFloor = !scene.burningFloor"> Floor
-    <input type = "checkbox" id = "burningObstacle" onclick = "scene.burningObstacle = !scene.burningObstacle" checked> Ring
-    <input type = "checkbox" id = "swirlButton" onclick = "scene.showSwirls = !scene.showSwirls"> Swirls
+    <input type = "checkbox" id = "burningFloor" checked> Floor
+    <input type = "checkbox" id = "burningObstacle"> Ring
+    <input type = "checkbox" id = "swirlButton"> Swirls
     <input type = "range" min = "0" max = "100" value = "50" id = "probabilitySlider" class = "slider"> Probability
   </div>
   <div class="canvas-wrap">
@@ -694,66 +694,78 @@ function endDrag() {
   mouseDown = false;
 }
 
-canvas.addEventListener("mousedown", (event) => {
-  startDrag(event.x, event.y);
-});
+function setupEventListeners() {
+  canvas.addEventListener("mousedown", (event) => {
+    startDrag(event.x, event.y);
+  });
 
-canvas.addEventListener("mouseup", (event) => {
-  endDrag();
-});
+  canvas.addEventListener("mouseup", (_event) => {
+    endDrag();
+  });
 
-canvas.addEventListener("mousemove", (event) => {
-  drag(event.x, event.y);
-});
+  canvas.addEventListener("mousemove", (event) => {
+    drag(event.x, event.y);
+  });
 
-canvas.addEventListener("touchstart", (event) => {
-  startDrag(event.touches[0].clientX, event.touches[0].clientY);
-});
+  canvas.addEventListener("touchstart", (event) => {
+    startDrag(event.touches[0].clientX, event.touches[0].clientY);
+  });
 
-canvas.addEventListener("touchend", (_event) => {
-  endDrag();
-});
+  canvas.addEventListener("touchend", () => {
+    endDrag();
+  });
 
-canvas.addEventListener(
-  "touchmove",
-  (event) => {
-    event.preventDefault();
-    event.stopImmediatePropagation();
-    drag(event.touches[0].clientX, event.touches[0].clientY);
-  },
-  { passive: false },
-);
+  canvas.addEventListener(
+    "touchmove",
+    (event) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      drag(event.touches[0].clientX, event.touches[0].clientY);
+    },
+    { passive: false },
+  );
 
-document.addEventListener("keydown", (event) => {
-  switch (event.key) {
-    case "p":
-      scene.paused = !scene.paused;
-      break;
-    case "m":
-      scene.paused = false;
-      simulate();
-      scene.paused = true;
-      break;
+  document.addEventListener("keydown", (event) => {
+    switch (event.key) {
+      case "p":
+        scene.paused = !scene.paused;
+        break;
+      case "m":
+        scene.paused = false;
+        simulate();
+        scene.paused = true;
+        break;
+    }
+  });
+
+  document.getElementById("burningFloor")!.addEventListener("change", (event) => {
+    scene.burningFloor = (event.target as HTMLInputElement).checked;
+  });
+
+  document.getElementById("burningObstacle")!.addEventListener("change", (event) => {
+    scene.burningObstacle = (event.target as HTMLInputElement).checked;
+  });
+
+  document.getElementById("swirlButton")!.addEventListener("change", (event) => {
+    scene.showSwirls = (event.target as HTMLInputElement).checked;
+  });
+
+  document.getElementById("probabilitySlider")!.oninput = function () {
+    scene.swirlProbability = parseFloat((this as HTMLInputElement).value);
+  };
+
+  let resizeTimer = 0;
+
+  function onResize() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(setupScene, 300);
   }
-});
 
-document.getElementById("probabilitySlider")!.oninput = function () {
-  scene.swirlProbability = parseFloat((this as HTMLInputElement).value);
-};
-
-let resizeTimer = 0;
-
-function onResize() {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(setupScene, 300);
-}
-
-function addResizeHandler() {
   document.body.addEventListener("resize", onResize);
 }
 
 // main -------------------------------------------------------
-addResizeHandler();
+setupEventListeners();
 
 function simulate() {
   if (!scene.paused && scene.fluid)
