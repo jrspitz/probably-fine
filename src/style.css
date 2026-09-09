@@ -295,11 +295,15 @@ code {
   }
 }
 
-.simControls {
-  position: relative; /* anchor for the settings dropdown */
-  display: flex;
-  justify-content: flex-end;
-  padding: 8px 12px;
+.canvas-wrap {
+  position: relative; /* anchor for the floating settings button */
+}
+
+.settings {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 5;
 }
 
 .settings-button {
@@ -309,11 +313,12 @@ code {
   width: 40px;
   height: 40px;
   padding: 8px;
-  border: none;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: none;
+  background: var(--bg);
   color: var(--text-h);
   cursor: pointer;
+  box-shadow: var(--shadow);
 }
 .settings-button:hover {
   background: var(--accent-bg);
@@ -326,7 +331,7 @@ code {
 .settings-menu {
   position: absolute;
   top: calc(100% + 4px);
-  right: 12px;
+  right: 0;
   display: none; /* closed by default */
   min-width: 220px;
   flex-direction: column;
