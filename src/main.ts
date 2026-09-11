@@ -205,13 +205,15 @@ function draw() {
 
     // opaque mug base with cylindrical shading (covers fluid/checker
     // behind the cup, plus the handle's left arc so it reads as attached
-    // behind the body)
-    const bw = cScale * dims.w;
-    const bh = cScale * dims.h;
+    // behind the body). Padded one cell beyond the physics dims so the
+    // rounded bottom corners still cover the square heat zone.
+    const padPx = cScale * h;
+    const bw = cScale * dims.w + 2 * padPx;
+    const bh = cScale * dims.h + 2 * padPx;
     const bottomRadius = Math.min(bw, bh) * 0.15;
     const topRadius = Math.min(bw, bh) * 0.03;
-    const x0 = cX(ox - hw);
-    const y0 = cY(oy + hh);
+    const x0 = cX(ox - hw) - padPx;
+    const y0 = cY(oy + hh) - padPx;
     const grad = c.createLinearGradient(x0, 0, x0 + bw, 0);
     grad.addColorStop(0, "#cfcfcf");
     grad.addColorStop(0.18, "#f2f2f2");

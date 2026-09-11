@@ -358,11 +358,12 @@ export class Fluid {
 
         let numNewSwirls = 0;
 
-        // obstacle burning
+        // obstacle burning (pad 0: heat stays within the walls so the
+        // opaque cup fill obscures it; no hot rim outside the cup)
         if (scene.burningObstacle) {
           const dx = (i + 0.5) * this.h - scene.obstacleX;
           const dy = (j + 0.5) * this.h - scene.obstacleY;
-          if (isCupWall(dx, dy, cupDims, h)) {
+          if (isCupWall(dx, dy, cupDims, 0)) {
             this.t[i * n + j] = 1.0;
             if (Math.random() < 0.5 * swirlProbability) numNewSwirls++;
           }
