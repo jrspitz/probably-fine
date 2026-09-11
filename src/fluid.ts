@@ -368,8 +368,8 @@ export class Fluid {
           }
         }
 
-        // floor burning
-        if (j < 4 && scene.burningFloor) {
+        // floor burning (thin: 2 rows deep, full width)
+        if (j < 2 && scene.burningFloor) {
           this.t[i * n + j] = 1.0;
           this.u[i * n + j] = 0.0;
           this.v[i * n + j] = 0.0;
