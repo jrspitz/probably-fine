@@ -1,4 +1,5 @@
 import "./style.css";
+import "@fontsource/bangers";
 import { Fluid } from "./fluid";
 import { cupHandle, isCupWall } from "./obstacle";
 import { scene } from "./scene";
@@ -235,13 +236,15 @@ function draw() {
     c.roundRect(x0, y0, bw, bh, radius);
     c.fill();
 
-    // mug label
+    // mug label (raised half an em)
     c.fillStyle = "#222";
     c.textAlign = "center";
     c.textBaseline = "middle";
-    c.font = `${Math.max(10, cScale * dims.w * 0.22)}px Impact, "Arial Black", sans-serif`;
-    c.fillText("THIS IS", cX(ox), cY(oy + 0.02));
-    c.fillText("FINE", cX(ox), cY(oy - 0.03));
+    const fontPx = Math.max(10, cScale * dims.w * 0.26);
+    c.font = `${fontPx}px Bangers, Impact, "Arial Black", sans-serif`;
+    const halfEm = (0.5 * fontPx) / cScale;
+    c.fillText("THIS IS", cX(ox), cY(oy + 0.02 + halfEm));
+    c.fillText("FINE", cX(ox), cY(oy - 0.03 + halfEm));
     c.restore();
     c.lineWidth = 1.0;
   }
