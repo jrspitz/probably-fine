@@ -177,23 +177,10 @@ function draw() {
     const wallPx = Math.max(2, cScale * dims.wall);
     c.lineJoin = "round";
 
-    // handle behind mug: dark outline pass + opaque fill pass.
+    // handle behind mug: single shaded band, no outline stroke.
     // Drawn first so the opaque mug base covers the left arc where it
     // would otherwise overlap the body.
     const hd = cupHandle(dims);
-    c.beginPath();
-    c.ellipse(
-      cX(ox + hd.cx),
-      cY(oy + hd.cy),
-      cScale * hd.rx,
-      cScale * hd.ry,
-      0,
-      0.0,
-      2.0 * Math.PI,
-    );
-    c.strokeStyle = "#404040";
-    c.lineWidth = wallPx + 4;
-    c.stroke();
     c.beginPath();
     c.ellipse(
       cX(ox + hd.cx),
@@ -221,7 +208,8 @@ function draw() {
     // behind the body)
     const bw = cScale * dims.w;
     const bh = cScale * dims.h;
-    const radius = Math.min(bw, bh) * 0.15;
+    const bottomRadius = Math.min(bw, bh) * 0.15;
+    const topRadius = Math.min(bw, bh) * 0.03;
     const x0 = cX(ox - hw);
     const y0 = cY(oy + hh);
     const grad = c.createLinearGradient(x0, 0, x0 + bw, 0);
@@ -233,7 +221,12 @@ function draw() {
     grad.addColorStop(1, "#bdbdbd");
     c.fillStyle = grad;
     c.beginPath();
-    c.roundRect(x0, y0, bw, bh, radius);
+    c.roundRect(x0, y0, bw, bh, [
+      topRadius,
+      topRadius,
+      bottomRadius,
+      bottomRadius,
+    ]);
     c.fill();
 
     // mug label (raised half an em)

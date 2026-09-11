@@ -6,7 +6,7 @@ export interface CupDims {
 
 export function cupHandle(dims: CupDims) {
   const rx = 0.225 * dims.w;
-  const ry = 0.25 * dims.h;
+  const ry = 0.34 * dims.h;
   return { cx: dims.w / 2 + rx, cy: 0.01, rx, ry };
 }
 
