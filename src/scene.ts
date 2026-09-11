@@ -35,7 +35,7 @@ export const scene: Scene = {
   burningObstacle: false, //true,
   burningFloor: true, // false,
   paused: false,
-  showObstacle: false,
+  showObstacle: true,
   showSwirls: false,
   showTemperatureLegend: false,
   showCheckerboard: false,

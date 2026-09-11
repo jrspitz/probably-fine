@@ -84,7 +84,7 @@ function setupScene() {
 
   scene.obstacleX = 0.5 * numX * h;
   scene.obstacleY = 0.3 * numY * h;
-  scene.showObstacle = scene.burningObstacle;
+  scene.showObstacle = true;
 
   scene.fluid = new Fluid(numX, numY, h);
 }
@@ -169,22 +169,16 @@ function draw() {
     };
     const hw = dims.w / 2;
     const hh = dims.h / 2;
-    const inset = dims.wall / 2;
     const ox = scene.obstacleX;
     const oy = scene.obstacleY;
 
-    c.strokeStyle = "#404040";
-    c.lineWidth = Math.max(2, cScale * dims.wall);
+    c.save();
+    const wallPx = Math.max(2, cScale * dims.wall);
     c.lineJoin = "round";
-    // cup body: U-shape (open top), stroke centered on the wall boxes
-    c.beginPath();
-    c.moveTo(cX(ox - hw + inset), cY(oy + hh));
-    c.lineTo(cX(ox - hw + inset), cY(oy - hh + inset));
-    c.lineTo(cX(ox + hw - inset), cY(oy - hh + inset));
-    c.lineTo(cX(ox + hw - inset), cY(oy + hh));
-    c.stroke();
 
-    // handle: elliptical ring on the +x side
+    // handle behind mug: dark outline pass + opaque fill pass.
+    // Drawn first so the opaque mug base covers the left arc where it
+    // would otherwise overlap the body.
     const hd = cupHandle(dims);
     c.beginPath();
     c.ellipse(
@@ -196,7 +190,59 @@ function draw() {
       0.0,
       2.0 * Math.PI,
     );
+    c.strokeStyle = "#404040";
+    c.lineWidth = wallPx + 4;
     c.stroke();
+    c.beginPath();
+    c.ellipse(
+      cX(ox + hd.cx),
+      cY(oy + hd.cy),
+      cScale * hd.rx,
+      cScale * hd.ry,
+      0,
+      0.0,
+      2.0 * Math.PI,
+    );
+    const hcx = cX(ox + hd.cx);
+    const hrx = cScale * hd.rx;
+    const hgrad = c.createLinearGradient(hcx - hrx, 0, hcx + hrx, 0);
+    hgrad.addColorStop(0, "#bdbdbd");
+    hgrad.addColorStop(0.3, "#f2f2f2");
+    hgrad.addColorStop(0.5, "#ffffff");
+    hgrad.addColorStop(0.75, "#d9d9d9");
+    hgrad.addColorStop(1, "#b0b0b0");
+    c.strokeStyle = hgrad;
+    c.lineWidth = wallPx;
+    c.stroke();
+
+    // opaque mug base with cylindrical shading (covers fluid/checker
+    // behind the cup, plus the handle's left arc so it reads as attached
+    // behind the body)
+    const bw = cScale * dims.w;
+    const bh = cScale * dims.h;
+    const radius = Math.min(bw, bh) * 0.15;
+    const x0 = cX(ox - hw);
+    const y0 = cY(oy + hh);
+    const grad = c.createLinearGradient(x0, 0, x0 + bw, 0);
+    grad.addColorStop(0, "#cfcfcf");
+    grad.addColorStop(0.18, "#f2f2f2");
+    grad.addColorStop(0.38, "#ffffff");
+    grad.addColorStop(0.62, "#f1f1f1");
+    grad.addColorStop(0.85, "#d4d4d4");
+    grad.addColorStop(1, "#bdbdbd");
+    c.fillStyle = grad;
+    c.beginPath();
+    c.roundRect(x0, y0, bw, bh, radius);
+    c.fill();
+
+    // mug label
+    c.fillStyle = "#222";
+    c.textAlign = "center";
+    c.textBaseline = "middle";
+    c.font = `${Math.max(10, cScale * dims.w * 0.22)}px Impact, "Arial Black", sans-serif`;
+    c.fillText("THIS IS", cX(ox), cY(oy + 0.02));
+    c.fillText("FINE", cX(ox), cY(oy - 0.03));
+    c.restore();
     c.lineWidth = 1.0;
   }
 
@@ -237,8 +283,7 @@ function drawTemperatureLegend() {
   const check = 7;
   for (let cy = 0; cy < barH; cy += check) {
     for (let cx = 0; cx < barW; cx += check) {
-      c.fillStyle =
-        (cx / check + cy / check) % 2 === 0 ? "#808080" : "#c0c0c0";
+      c.fillStyle = (cx / check + cy / check) % 2 === 0 ? "#808080" : "#c0c0c0";
       c.fillRect(
         px + pad + cx,
         py + pad + cy,
