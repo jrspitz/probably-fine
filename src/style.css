@@ -303,6 +303,10 @@ code {
   display: block;
 }
 
+#myCanvas.checker {
+  background: repeating-conic-gradient(#808080 0 25%, #c0c0c0 0 50%) 0 0 / 16px 16px;
+}
+
 .settings {
   position: absolute;
   top: 12px;

@@ -16,6 +16,7 @@ export interface Scene {
   showObstacle: boolean;
   showSwirls: boolean;
   showTemperatureLegend: boolean;
+  showCheckerboard: boolean;
   swirlProbability: number;
   swirlMaxRadius: number;
   fluid: Fluid | null;
@@ -37,6 +38,7 @@ export const scene: Scene = {
   showObstacle: false,
   showSwirls: false,
   showTemperatureLegend: false,
+  showCheckerboard: false,
   swirlProbability: 50.0,
   swirlMaxRadius: 0.05,
   fluid: null,

@@ -24,6 +24,7 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
         <label class="setting"><input type = "checkbox" id = "burningObstacle">Hot Cup</label>
         <label class="setting"><input type = "checkbox" id = "swirlButton"> Swirls</label>
         <label class="setting"><input type = "checkbox" id = "tempLegendToggle"> Legend</label>
+        <label class="setting"><input type = "checkbox" id = "checkerToggle"> Checker</label>
         <div class="setting"><label for = "probabilitySlider">Probability</label>
         <input type = "range" min = "0" max = "100" value = "50" id = "probabilitySlider" class = "slider"></div>
       </div>
@@ -92,25 +93,29 @@ function setupScene() {
 
 function getFireColor(val: number) {
   val = Math.min(Math.max(val, 0.0), 1.0);
-  let r, g, b;
+  let r, g, b, a;
 
   if (val < 0.3) {
     const s = val / 0.3;
     r = 0.2 * s;
     g = 0.2 * s;
     b = 0.2 * s;
+    a = 0.55 * s;
   } else if (val < 0.5) {
     const s = (val - 0.3) / 0.2;
     r = 0.2 + 0.8 * s;
     g = 0.1;
     b = 0.1;
+    a = 0.55 + 0.15 * s;
   } else {
-    const s = (val - 0.5) / 0.48;
+    const t = (val - 0.5) / 0.5;
+    const s = t * t * (3 - 2 * t);
     r = 1.0;
     g = s;
     b = 0.0;
+    a = 0.7 + 0.2 * s;
   }
-  return [255 * r, 255 * g, 255 * b, 255];
+  return [255 * r, 255 * g, 255 * b, 255 * a];
 }
 
 function draw() {
@@ -139,6 +144,7 @@ function draw() {
       const r = color[0];
       const g = color[1];
       const b = color[2];
+      const a = color[3];
 
       for (let yi = y; yi < y + cy; yi++) {
         let p = 4 * (yi * canvas.width + x);
@@ -147,7 +153,7 @@ function draw() {
           id.data[p++] = r;
           id.data[p++] = g;
           id.data[p++] = b;
-          id.data[p++] = 255;
+          id.data[p++] = a;
         }
       }
     }
@@ -228,9 +234,23 @@ function drawTemperatureLegend() {
   c.fillStyle = "rgba(0,0,0,0.55)";
   c.fillRect(px, py, panelW, panelH);
 
+  const check = 7;
+  for (let cy = 0; cy < barH; cy += check) {
+    for (let cx = 0; cx < barW; cx += check) {
+      c.fillStyle =
+        (cx / check + cy / check) % 2 === 0 ? "#808080" : "#c0c0c0";
+      c.fillRect(
+        px + pad + cx,
+        py + pad + cy,
+        Math.min(check, barW - cx),
+        Math.min(check, barH - cy),
+      );
+    }
+  }
+
   for (let x = 0; x < barW; x++) {
     const color = getFireColor(x / (barW - 1));
-    c.fillStyle = `rgb(${color[0] | 0},${color[1] | 0},${color[2] | 0})`;
+    c.fillStyle = `rgba(${color[0] | 0},${color[1] | 0},${color[2] | 0},${color[3] / 255})`;
     c.fillRect(px + pad + x, py + pad, 1, barH);
   }
 
@@ -384,6 +404,14 @@ function setupEventListeners() {
     .getElementById("tempLegendToggle")!
     .addEventListener("change", (event) => {
       scene.showTemperatureLegend = (event.target as HTMLInputElement).checked;
+    });
+
+  document
+    .getElementById("checkerToggle")!
+    .addEventListener("change", (event) => {
+      const checked = (event.target as HTMLInputElement).checked;
+      scene.showCheckerboard = checked;
+      canvas.classList.toggle("checker", checked);
     });
 
   document.getElementById("probabilitySlider")!.oninput = function () {
