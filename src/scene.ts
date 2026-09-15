@@ -1,5 +1,7 @@
 import type { Fluid } from "./fluid";
 
+export type BackgroundMode = "none" | "checkers" | "image";
+
 export interface Scene {
   gravity: number;
   dt: number;
@@ -16,7 +18,7 @@ export interface Scene {
   showObstacle: boolean;
   showSwirls: boolean;
   showTemperatureLegend: boolean;
-  showCheckerboard: boolean;
+  background: BackgroundMode;
   swirlProbability: number;
   swirlMaxRadius: number;
   fluid: Fluid | null;
@@ -38,7 +40,7 @@ export const scene: Scene = {
   showObstacle: true,
   showSwirls: false,
   showTemperatureLegend: false,
-  showCheckerboard: false,
+  background: "none",
   swirlProbability: 50.0,
   swirlMaxRadius: 0.05,
   fluid: null,

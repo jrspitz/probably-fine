@@ -2,8 +2,10 @@ import "./style.css";
 import "@fontsource/bangers";
 import { Fluid } from "./fluid";
 import { drawCup } from "./cup";
+import { applyBackground } from "./background";
 import { isCupWall } from "./obstacle";
 import { scene } from "./scene";
+import type { BackgroundMode } from "./scene";
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
   <div class="canvas-wrap">
@@ -26,7 +28,10 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
         <label class="setting"><input type = "checkbox" id = "burningObstacle">Hot Cup</label>
         <label class="setting"><input type = "checkbox" id = "swirlButton"> Swirls</label>
         <label class="setting"><input type = "checkbox" id = "tempLegendToggle"> Legend</label>
-        <label class="setting"><input type = "checkbox" id = "checkerToggle"> Checker</label>
+        <div class="setting background-group"><span>Background</span>
+        <label><input type = "radio" name = "background" value = "none" checked> None</label>
+        <label><input type = "radio" name = "background" value = "checkers"> Checkers</label>
+        <label><input type = "radio" name = "background" value = "image"> Image</label></div>
         <div class="setting"><label for = "probabilitySlider">Probability</label>
         <input type = "range" min = "0" max = "100" value = "50" id = "probabilitySlider" class = "slider"></div>
       </div>
@@ -383,11 +388,13 @@ function setupEventListeners() {
     });
 
   document
-    .getElementById("checkerToggle")!
-    .addEventListener("change", (event) => {
-      const checked = (event.target as HTMLInputElement).checked;
-      scene.showCheckerboard = checked;
-      canvas.classList.toggle("checker", checked);
+    .querySelectorAll('input[name="background"]')
+    .forEach((el) => {
+      el.addEventListener("change", (event) => {
+        const mode = (event.target as HTMLInputElement).value as BackgroundMode;
+        scene.background = mode;
+        applyBackground(canvas, mode);
+      });
     });
 
   document.getElementById("probabilitySlider")!.oninput = function () {
@@ -428,6 +435,7 @@ function setupEventListeners() {
 
 // main -------------------------------------------------------
 setupEventListeners();
+applyBackground(canvas, scene.background);
 
 function simulate() {
   if (!scene.paused && scene.fluid)

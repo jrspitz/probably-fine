@@ -49,7 +49,7 @@ export function drawCup(
   ctx.lineWidth = wallPx;
   ctx.stroke();
 
-  // opaque mug base with cylindrical shading (covers fluid/checker
+  // opaque mug base with cylindrical shading (covers the background
   // behind the cup, plus the handle's left arc so it reads as attached
   // behind the body). Padded one cell beyond the physics dims so the
   // rounded bottom corners still cover the square heat zone.
