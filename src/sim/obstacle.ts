@@ -1,8 +1,4 @@
-export interface CupDims {
-  w: number;
-  h: number;
-  wall: number;
-}
+import type { CupDims } from "./types";
 
 export function cupHandle(dims: CupDims) {
   const rx = 0.225 * dims.w;

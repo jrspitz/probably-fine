@@ -6,6 +6,7 @@ import tseslint from "typescript-eslint";
 import globals from "globals";
 
 export default defineConfig({
+  ignores: ["dist/**"],
   files: ["**/*.{js,ts}"],
   extends: [
     js.configs.recommended,

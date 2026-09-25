@@ -1,13 +1,12 @@
 import { isCupWall } from "./obstacle";
-import { scene } from "./scene";
-
-export const U_FIELD = 0;
-export const V_FIELD = 1;
-export const T_FIELD = 2;
-
-export type FieldType = typeof U_FIELD | typeof V_FIELD | typeof T_FIELD;
-
-// ----------------- start of simulator ------------------------------
+import {
+  U_FIELD,
+  V_FIELD,
+  T_FIELD,
+  type FieldType,
+  type FireConfig,
+  type CupDims,
+} from "./types";
 
 export class Fluid {
   numX: number;
@@ -182,8 +181,6 @@ export class Fluid {
 
     for (let i = 1; i < this.numX; i++) {
       for (let j = 1; j < this.numY; j++) {
-        // cnt++;
-
         // u component
         if (
           this.s[i * n + j] != 0.0 &&
@@ -243,28 +240,26 @@ export class Fluid {
     this.t.set(this.newT);
   }
 
-  updateFire(dt: number) {
+  updateFire(dt: number, fireConfig: FireConfig) {
     const h = this.h;
 
     const swirlTimeSpan = 1.0;
     const swirlOmega = 20.0;
     const swirlDamping = 10.0 * dt;
-    const swirlProbability = scene.swirlProbability * h * h;
+    const swirlProbability = fireConfig.swirlProbability * h * h;
 
     const fireCooling = 1.2 * dt;
     const smokeCooling = 0.3 * dt;
     const lift = 3.0;
     const acceleration = 6.0 * dt;
-    const kernelRadius = scene.swirlMaxRadius;
+    const kernelRadius = fireConfig.swirlMaxRadius;
 
     // update swirls
-
     const n = this.numY;
     const maxX = (this.numX - 1) * this.h;
     const maxY = (this.numY - 1) * this.h;
 
     // kill swirls
-
     let num = 0;
     for (let nr = 0; nr < this.numSwirls; nr++) {
       this.swirlTime[nr] -= dt;
@@ -279,7 +274,6 @@ export class Fluid {
     this.numSwirls = num;
 
     // advect and modify velocity field
-
     for (let nr = 0; nr < this.numSwirls; nr++) {
       let x = this.swirlX[nr];
       let y = this.swirlY[nr];
@@ -295,7 +289,6 @@ export class Fluid {
       const omega = this.swirlOmega[nr];
 
       // update surrounding velocity field
-
       const x0 = Math.max(Math.floor((x - kernelRadius) / h), 0);
       const y0 = Math.max(Math.floor((y - kernelRadius) / h), 0);
       const x1 = Math.min(
@@ -339,13 +332,6 @@ export class Fluid {
     }
 
     // update temperatures
-
-    const cupDims = {
-      w: scene.obstacleCupW,
-      h: scene.obstacleCupH,
-      wall: scene.obstacleWall,
-    };
-
     for (let i = 0; i < this.numX; i++) {
       for (let j = 0; j < this.numY; j++) {
         const t = this.t[i * n + j];
@@ -358,19 +344,18 @@ export class Fluid {
 
         let numNewSwirls = 0;
 
-        // obstacle burning (pad 0: heat stays within the walls so the
-        // opaque cup fill obscures it; no hot rim outside the cup)
-        if (scene.burningObstacle) {
-          const dx = (i + 0.5) * this.h - scene.obstacleX;
-          const dy = (j + 0.5) * this.h - scene.obstacleY;
-          if (isCupWall(dx, dy, cupDims, 0)) {
+        // obstacle burning (pad 0: heat stays within the walls)
+        if (fireConfig.burningObstacle && fireConfig.obstacle) {
+          const dx = (i + 0.5) * this.h - fireConfig.obstacle.x;
+          const dy = (j + 0.5) * this.h - fireConfig.obstacle.y;
+          if (isCupWall(dx, dy, fireConfig.obstacle.dims, 0)) {
             this.t[i * n + j] = 1.0;
             if (Math.random() < 0.5 * swirlProbability) numNewSwirls++;
           }
         }
 
         // floor burning (thin: 2 rows deep, full width)
-        if (j < 2 && scene.burningFloor) {
+        if (j < 2 && fireConfig.burningFloor) {
           this.t[i * n + j] = 1.0;
           this.u[i * n + j] = 0.0;
           this.v[i * n + j] = 0.0;
@@ -389,10 +374,7 @@ export class Fluid {
       }
     }
 
-    // foo: maybe for obstacle
-
     // smooth temperatures
-
     for (let i = 1; i < this.numX - 1; i++) {
       for (let j = 1; j < this.numY - 1; j++) {
         const t = this.t[i * n + j];
@@ -409,15 +391,42 @@ export class Fluid {
     }
   }
 
-  // ----------------- end of simulator ------------------------------
+  applyObstacleImpulse(
+    obstacleX: number,
+    obstacleY: number,
+    dims: CupDims,
+    vx: number,
+    vy: number,
+  ) {
+    const n = this.numY;
+    for (let i = 1; i < this.numX - 2; i++) {
+      for (let j = 1; j < this.numY - 2; j++) {
+        this.s[i * n + j] = 1.0;
 
-  simulate(dt: number, gravity: number, numIters: number) {
+        const dx = (i + 0.5) * this.h - obstacleX;
+        const dy = (j + 0.5) * this.h - obstacleY;
+
+        if (isCupWall(dx, dy, dims, this.h)) {
+          this.u[i * n + j] += 0.2 * vx;
+          this.u[(i + 1) * n + j] += 0.2 * vx;
+          this.v[i * n + j] += 0.2 * vy;
+          this.v[i * n + j + 1] += 0.2 * vy;
+        }
+      }
+    }
+  }
+
+  simulate(
+    dt: number,
+    gravity: number,
+    numIters: number,
+    fireConfig: FireConfig,
+  ) {
     this.integrate(dt, gravity);
-
     this.solveIncompressibility(numIters);
     this.extrapolate();
     this.advectVel(dt);
     this.advectTemperature(dt);
-    this.updateFire(dt);
+    this.updateFire(dt, fireConfig);
   }
 }

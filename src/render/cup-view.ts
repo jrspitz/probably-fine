@@ -1,5 +1,5 @@
-import { cupHandle } from "./obstacle";
-import type { CupDims } from "./obstacle";
+import { cupHandle } from "../sim/obstacle";
+import type { CupDims } from "../sim/types";
 
 export interface CupView {
   toX: (x: number) => number;
