@@ -33,6 +33,7 @@
               <label><input type="radio" name="background" value="none" checked> None</label>
               <label><input type="radio" name="background" value="checkers"> Checkers</label>
               <label><input type="radio" name="background" value="image"> Image</label>
+              <label><input type="radio" name="background" value="video"> Video</label>
             </div>
             <div class="setting">
               <label for="probabilitySlider">Probability</label>
@@ -40,7 +41,10 @@
             </div>
           </div>
         </div>
-        <canvas id="myCanvas"></canvas>
+        <div class="canvas-stage">
+          <video id="bgVideo" class="bg-video" loop muted playsinline preload="metadata" aria-hidden="true"></video>
+          <canvas id="myCanvas"></canvas>
+        </div>
       </div>
     </div>
     <script type="module" src="/src/main.ts"></script>

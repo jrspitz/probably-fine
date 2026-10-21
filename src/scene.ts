@@ -1,6 +1,6 @@
 import type { FireConfig } from "./sim/types";
 
-export type BackgroundMode = "none" | "checkers" | "image";
+export type BackgroundMode = "none" | "checkers" | "image" | "video";
 
 export interface Scene {
   gravity: number;

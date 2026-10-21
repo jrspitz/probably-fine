@@ -75,6 +75,29 @@ body {
   flex-grow: 1;
 }
 
+.canvas-stage {
+  position: relative;
+  line-height: 0;
+}
+
+.canvas-stage canvas {
+  position: relative;
+  z-index: 1;
+}
+
+.bg-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.bg-video.visible {
+  display: block;
+}
+
 #myCanvas {
   display: block;
   background: #000;
@@ -88,6 +111,10 @@ body {
 #myCanvas.bg-image {
   background-size: cover;
   background-position: center;
+}
+
+#myCanvas.bg-video {
+  background: transparent;
 }
 
 .settings {
