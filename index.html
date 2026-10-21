@@ -26,18 +26,18 @@
           <div class="settings-menu" id="settingsMenu">
             <label class="setting"><input type="checkbox" id="burningFloor" checked>Hot Floor</label>
             <label class="setting"><input type="checkbox" id="burningObstacle">Hot Cup</label>
-            <label class="setting"><input type="checkbox" id="swirlButton"> Swirls</label>
-            <label class="setting"><input type="checkbox" id="tempLegendToggle"> Legend</label>
+            <label class="setting"><input type="checkbox" id="tempLegendToggle"> Temperature Legend</label>
+            <label class="setting"><input type="checkbox" id="swirlButton"> Turbulent Swirls</label>
+            <div class="setting">
+              <label for="probabilitySlider">Swirl Probability</label>
+              <input type="range" min="0" max="100" value="50" id="probabilitySlider" class="slider">
+            </div>
             <div class="setting background-group">
               <span>Background</span>
-              <label><input type="radio" name="background" value="none" checked> None</label>
+              <label><input type="radio" name="background" value="none"> None</label>
               <label><input type="radio" name="background" value="checkers"> Checkers</label>
               <label><input type="radio" name="background" value="image"> Image</label>
-              <label><input type="radio" name="background" value="video"> Video</label>
-            </div>
-            <div class="setting">
-              <label for="probabilitySlider">Probability</label>
-              <input type="range" min="0" max="100" value="50" id="probabilitySlider" class="slider">
+              <label><input type="radio" name="background" value="video" checked> Video</label>
             </div>
           </div>
         </div>
