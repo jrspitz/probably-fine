@@ -5,7 +5,6 @@ export class Viewport {
   simWidth = 1.0;
 
   static readonly MAX_CANVAS_WIDTH = 1600;
-  static readonly CANVAS_BORDER_TOTAL = 4; // 2px inline border on each side
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -15,13 +14,9 @@ export class Viewport {
   resize(): { simWidth: number; simHeight: number } {
     this.canvas.width = Math.max(
       50,
-      Math.min(window.innerWidth, Viewport.MAX_CANVAS_WIDTH) -
-        Viewport.CANVAS_BORDER_TOTAL,
+      Math.min(window.innerWidth, Viewport.MAX_CANVAS_WIDTH),
     );
-    this.canvas.height = Math.max(
-      50,
-      window.innerHeight - 20 - Viewport.CANVAS_BORDER_TOTAL,
-    );
+    this.canvas.height = Math.max(50, window.innerHeight);
 
     this.simHeight = 1.0;
     this.cScale = this.canvas.height / this.simHeight;

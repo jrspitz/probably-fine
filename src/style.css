@@ -101,7 +101,6 @@ body {
 #myCanvas {
   display: block;
   background: #000;
-  border: 2px solid;
 }
 
 #myCanvas.bg-checkers {
