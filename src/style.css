@@ -121,9 +121,12 @@ body {
   top: 12px;
   right: 12px;
   z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.settings-button {
+.icon-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -136,13 +139,14 @@ body {
   color: var(--text-h);
   cursor: pointer;
   box-shadow: var(--shadow);
+  text-decoration: none;
 }
 
-.settings-button:hover {
+.icon-button:hover {
   background: var(--accent-bg);
 }
 
-.settings-button svg {
+.icon-button svg {
   width: 24px;
   height: 24px;
 }
@@ -152,7 +156,7 @@ body {
   top: calc(100% + 4px);
   right: 0;
   display: none; /* closed by default */
-  min-width: 220px;
+  min-width: 260px;
   flex-direction: column;
   gap: 12px;
   padding: 14px 16px;
@@ -196,4 +200,34 @@ body {
 
 .slider {
   width: 100%;
+}
+
+.menu-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.menu-credits {
+  margin: 0;
+  color: var(--text);
+}
+
+.menu-link,
+.menu-credits a {
+  color: var(--text-h);
+}
+
+.menu-link {
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.menu-link:hover,
+.menu-credits a:hover {
+  text-decoration: underline;
 }
