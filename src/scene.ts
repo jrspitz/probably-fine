@@ -40,7 +40,7 @@ export function createDefaultScene(): Scene {
     showObstacle: true,
     showSwirls: false,
     showTemperatureLegend: false,
-    background: "video",
+    background: "none",
     swirlProbability: 50.0,
     swirlMaxRadius: 0.05,
   };
